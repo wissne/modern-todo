@@ -88,7 +88,7 @@ export const TodoItem = ({ todo, onToggle, onUpdate, onDelete, onMove, onCreateC
   const priority = priorityConfig[todo.priority];
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border-2 border-gray-100 p-6 transition-all duration-300 hover:shadow-lg hover:border-gray-200 ${
+    <div className={`bg-white rounded-xl shadow-sm border-2 border-gray-100 p-4 transition-all duration-300 hover:shadow-lg hover:border-gray-200 ${
       todo.completed ? 'opacity-75 bg-gray-50' : ''
     }`}>
       <div className="flex items-start gap-4">

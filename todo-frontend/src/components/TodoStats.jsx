@@ -41,19 +41,19 @@ export const TodoStats = ({ stats }) => {
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-6">
-      <div className="flex items-center gap-2 mb-6">
-        <ChartBarIcon className="w-6 h-6 text-indigo-600" />
-        <h2 className="text-xl font-bold text-gray-800">Your Progress</h2>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 mb-4">
+      <div className="flex items-center gap-2 mb-4">
+        <ChartBarIcon className="w-5 h-5 text-indigo-600" />
+        <h2 className="text-lg font-bold text-gray-800">Your Progress</h2>
       </div>
       
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         {statItems.map((item, index) => {
           const Icon = item.icon;
           return (
             <div 
               key={index}
-              className={`${item.bgColor} ${item.borderColor} border-2 rounded-xl p-4 transition-all duration-200 hover:shadow-md transform hover:scale-105`}
+              className={`${item.bgColor} ${item.borderColor} border-2 rounded-xl p-3 transition-all duration-200 hover:shadow-md transform hover:scale-105`}
             >
               <div className="flex items-center justify-between mb-2">
                 <Icon className={`w-6 h-6 ${item.color}`} />

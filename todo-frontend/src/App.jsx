@@ -26,6 +26,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeView, setActiveView] = useState('active') // Default to active items
   const [isAddingTodo, setIsAddingTodo] = useState(false)
+  const [isNavVisible, setIsNavVisible] = useState(true) // Navigation visibility state
 
   const handleAddTodo = async (todoData) => {
     setIsAddingTodo(true)
@@ -65,76 +66,96 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex">
+      {/* Navigation Toggle Button */}
+      <button
+        onClick={() => setIsNavVisible(!isNavVisible)}
+        className={`hidden lg:block fixed top-4 z-50 p-3 bg-white rounded-xl shadow-lg border border-gray-200 text-gray-600 hover:text-gray-800 transition-all duration-200 hover:shadow-xl ${isNavVisible ? 'left-[336px]' : 'left-4'
+          }`}
+        title={isNavVisible ? 'Hide Navigation' : 'Show Navigation'}
+      >
+        {isNavVisible ? (
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+          </svg>
+        ) : (
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+          </svg>
+        )}
+      </button>
+
       {/* Navigation Sidebar */}
-      <Navigation 
-        activeView={activeView} 
-        onViewChange={setActiveView} 
+      <Navigation
+        activeView={activeView}
+        onViewChange={setActiveView}
         stats={filteredStats}
+        isVisible={isNavVisible}
       />
-      
+
       {/* Main Content */}
-      <div className="flex-1 lg:ml-80 min-h-screen overflow-y-auto">
-        <div className="p-4 lg:p-8">
-          <div className="max-w-4xl mx-auto pt-16 lg:pt-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <CheckCircleIcon className="w-10 h-10 text-indigo-600" />
-            <h1 className="text-4xl font-bold text-gray-800">Modern Todo</h1>
-          </div>
-          <p className="text-gray-600 text-lg">Stay organized and productive</p>
-        </div>
+      <div className={`flex-1 min-h-screen overflow-y-auto transition-all duration-300 ${isNavVisible ? 'lg:ml-80' : 'lg:ml-0'
+        }`}>
+        <div className="p-2 lg:p-4">
+          <div className="max-w-4xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-4">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <CheckCircleIcon className="w-8 h-8 text-indigo-600" />
+                <h1 className="text-2xl font-bold text-gray-800">Modern Todo</h1>
+              </div>
+              <p className="text-gray-600 text-sm">Stay organized and productive</p>
+            </div>
 
-        {/* API Test (show if there are errors) */}
-        {error && <ApiTest />}
+            {/* API Test (show if there are errors) */}
+            {error && <ApiTest />}
 
-        {/* Stats - Show only when Statistics view is selected */}
-        {activeView === 'stats' && <TodoStats stats={stats} />}
+            {/* Stats - Show only when Statistics view is selected */}
+            {activeView === 'stats' && <TodoStats stats={stats} />}
 
-        {/* Add Todo Form - Hide when in stats view */}
-        {activeView !== 'stats' && (
-          <AddTodoForm onAdd={handleAddTodo} loading={isAddingTodo} />
-        )}
+            {/* Add Todo Form - Hide when in stats view */}
+            {activeView !== 'stats' && (
+              <AddTodoForm onAdd={handleAddTodo} loading={isAddingTodo} />
+            )}
 
-        {/* Search - Hide when in stats view */}
-        {activeView !== 'stats' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <SearchBar onSearch={handleSearch} loading={loading} />
-          </div>
-        )}
+            {/* Search - Hide when in stats view */}
+            {activeView !== 'stats' && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 mb-6">
+                <SearchBar onSearch={handleSearch} loading={loading} />
+              </div>
+            )}
 
-        {/* Error Display */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            <p className="font-medium">Error: {error}</p>
-          </div>
-        )}
+            {/* Error Display */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg mb-4">
+                <p className="font-medium text-sm">Error: {error}</p>
+              </div>
+            )}
 
-        {/* Todo List - Hide when in stats view */}
-        {activeView !== 'stats' && (
-          <TodoList
-            todos={filteredTodos}
-            loading={loading}
-            onToggle={toggleTodo}
-            onUpdate={updateTodo}
-            onDelete={deleteTodo}
-            onMove={moveTodo}
-            onCreateChild={createTodo}
-          />
-        )}
+            {/* Todo List - Hide when in stats view */}
+            {activeView !== 'stats' && (
+              <TodoList
+                todos={filteredTodos}
+                loading={loading}
+                onToggle={toggleTodo}
+                onUpdate={updateTodo}
+                onDelete={deleteTodo}
+                onMove={moveTodo}
+                onCreateChild={createTodo}
+              />
+            )}
 
-        {/* Empty State - Only for non-stats views */}
-        {activeView !== 'stats' && !loading && filteredTodos.length === 0 && (
-          <div className="text-center py-12">
-            <CheckCircleIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-gray-500 mb-2">
-              {searchQuery ? 'No todos found' : getEmptyStateMessage(activeView)}
-            </h3>
-            <p className="text-gray-400">
-              {searchQuery ? 'Try a different search term' : getEmptyStateSubtext(activeView)}
-            </p>
-          </div>
-        )}
+            {/* Empty State - Only for non-stats views */}
+            {activeView !== 'stats' && !loading && filteredTodos.length === 0 && (
+              <div className="text-center py-12">
+                <CheckCircleIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-xl font-medium text-gray-500 mb-2">
+                  {searchQuery ? 'No todos found' : getEmptyStateMessage(activeView)}
+                </h3>
+                <p className="text-gray-400">
+                  {searchQuery ? 'Try a different search term' : getEmptyStateSubtext(activeView)}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

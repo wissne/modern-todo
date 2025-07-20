@@ -20,7 +20,7 @@ export const TodoList = ({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {todos.map((todo) => (
         <TodoItem
           key={todo.id}

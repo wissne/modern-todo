@@ -20,7 +20,7 @@ import {
   ChartBarIcon as ChartBarIconSolid
 } from '@heroicons/react/24/solid';
 
-export const Navigation = ({ activeView, onViewChange, stats }) => {
+export const Navigation = ({ activeView, onViewChange, stats, isVisible = true }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigationItems = [
@@ -160,7 +160,8 @@ export const Navigation = ({ activeView, onViewChange, stats }) => {
       <div className={`
         fixed inset-y-0 left-0 z-40 w-80 bg-white border-r border-gray-200 shadow-lg
         transform transition-transform duration-300 ease-in-out
-        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        ${isVisible ? 'lg:translate-x-0' : 'lg:-translate-x-full'}
       `}>
         <div className="flex flex-col h-full">
           {/* Header */}

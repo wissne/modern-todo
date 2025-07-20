@@ -36,8 +36,8 @@ export const AddTodoForm = ({ onAdd, loading = false }) => {
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-6 transition-all duration-200 hover:shadow-xl">
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 mb-4 transition-all duration-200 hover:shadow-xl">
+      <form onSubmit={handleSubmit} className="space-y-3">
         <div className="flex gap-3">
           <div className="flex-1">
             <input
