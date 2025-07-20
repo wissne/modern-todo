@@ -1,5 +1,116 @@
 # 📋 Todo API Backend
+# todo-backend
 
+## 项目简介
+本项目为待办事项应用的后端，基于 Python 构建，采用 FastAPI 框架，支持任务的增删改查、子任务管理、数据持久化等功能。可与前端（todo-frontend）配合，实现完整的任务管理系统。
+
+## 主要功能
+- 创建、查询、更新、删除待办事项
+- 支持任务子项（子任务）
+- RESTful API 设计，易于前后端集成
+- 数据持久化（SQLite 数据库）
+- 任务状态、日期等筛选
+
+## 目录结构
+```
+todo-backend/
+  app/
+    __init__.py
+    crud.py         # 业务逻辑
+    database.py     # 数据库连接
+    main.py         # FastAPI 入口
+    models.py       # ORM模型
+    schemas.py      # 数据结构定义
+    routers/
+      __init__.py
+      todos.py      # 路由定义
+- AI 智能子任务生成（如 generate_ai_subtasks）
+  scripts/
+    dev.py          # 开发辅助脚本
+  start_server.py   # 启动脚本
+  test_server.py    # 测试脚本
+  todos.db          # SQLite数据库文件
+  Dockerfile        # Docker 构建
+  docker-compose.yml
+-
+### 典型接口
+- `GET /api/todos/`：获取所有待办事项（支持嵌套/筛选）
+- `POST /api/todos/`：新建待办事项
+- `PUT /api/todos/{todo_id}`：更新待办事项
+- `DELETE /api/todos/{todo_id}`：删除待办事项及其子项
+- `PATCH /api/todos/{todo_id}/toggle`：切换完成状态
+- `GET /api/todos/{todo_id}/children`：获取某待办的直接子项
+- `POST /api/todos/{todo_id}/move`：移动待办到其他父项
+- `GET /api/todos/search/`：文本搜索待办事项
+- `GET /api/todos/stats/`：获取统计信息
+- `DELETE /api/todos/bulk/`：批量删除
+- `POST /api/todos/{todo_id}/ai-subtasks`：AI 智能生成子任务
+
+#### AI 子任务生成接口
+`POST /api/todos/{todo_id}/ai-subtasks`
+- 说明：为指定待办事项自动生成若干子任务（如分解复杂任务、智能规划步骤）。
+- 参数：`max_subtasks`（可选，默认5，最大10）
+- 返回：生成的子任务列表及提示信息
+- 示例：
+```bash
+curl -X POST "http://localhost:8000/api/todos/123/ai-subtasks?max_subtasks=5"
+```
+返回：
+```
+{
+  "parent_todo_id": 123,
+  "generated_subtasks": [ ... ],
+  "message": "Generated 5 AI subtasks for 'xxx'"
+}
+```
+  pyproject.toml    # 项目依赖
+  uv.lock           # uv 工具锁文件
+  README.md         # 项目说明
+```
+
+## 快速开始
+
+### 使用 uv 工具
+1. 安装依赖
+   ```bash
+   uv sync
+   ```
+2. 启动开发服务器
+   ```bash
+   uvicorn app.main:app --reload
+   # 或使用脚本
+   uv run start_server.py
+   ```
+3. 访问 API 文档
+   打开浏览器访问 [http://localhost:8000/docs](http://localhost:8000/docs)
+
+### 使用 Docker
+1. 构建镜像
+   ```bash
+   docker build -t todo-backend .
+   ```
+2. 启动服务
+   ```bash
+   docker-compose up
+   ```
+
+## API 说明
+- 所有接口均为 RESTful 风格，详见 `/docs` 自动生成文档。
+- 主要路由定义在 `app/routers/todos.py`。
+
+## 测试
+运行测试脚本：
+```bash
+uv run test_server.py
+```
+
+## 其他
+- 如遇依赖或环境问题，请参考 `TROUBLESHOOTING.md`。
+- 支持 Docker 部署，便于生产环境集成。
+
+---
+
+如需定制或扩展功能，请参考各模块源码及 FastAPI 官方文档。
 A comprehensive FastAPI backend for a todo application with nested sub-todos support.
 
 ## 🚀 Features
