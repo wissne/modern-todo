@@ -239,3 +239,40 @@ def bulk_delete_todos(
     """Delete multiple todos by IDs"""
     deleted_count = crud.bulk_delete_todos(db, delete_request.ids)
     return {"message": f"Deleted {deleted_count} todos", "deleted_count": deleted_count}
+
+@router.post("/{todo_id}/ai-subtasks", response_model=schemas.AIGenerateSubtasksResponse)
+def generate_ai_subtasks(
+    todo_id: int,
+    max_subtasks: int = Query(default=5, ge=1, le=10, description="Maximum number of subtasks to generate"),
+    db: Session = Depends(get_db)
+):
+    """Generate AI subtasks for a todo using mock AI analysis"""
+    # Check if parent todo exists
+    parent_todo = crud.get_todo(db, todo_id)
+    if not parent_todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
+    
+    # Generate subtasks using mock AI
+    generated_subtasks = crud.generate_ai_subtasks(db, todo_id, max_subtasks)
+    
+    # Convert to response format
+    subtask_responses = [
+        schemas.TodoResponse(
+            id=subtask.id,
+            text=subtask.text,
+            completed=subtask.completed,
+            due_date=subtask.due_date,
+            priority=subtask.priority,
+            parent_id=subtask.parent_id,
+            user_id=subtask.user_id,
+            created_at=subtask.created_at,
+            updated_at=subtask.updated_at,
+            children_count=len(subtask.children)
+        ) for subtask in generated_subtasks
+    ]
+    
+    return schemas.AIGenerateSubtasksResponse(
+        parent_todo_id=todo_id,
+        generated_subtasks=subtask_responses,
+        message=f"Generated {len(generated_subtasks)} AI subtasks for '{parent_todo.text}'"
+    )

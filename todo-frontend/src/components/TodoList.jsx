@@ -8,7 +8,8 @@ export const TodoList = ({
   onUpdate, 
   onDelete, 
   onMove,
-  onCreateChild 
+  onCreateChild,
+  onGenerateAISubtasks
 }) => {
   if (loading) {
     return (
@@ -30,6 +31,7 @@ export const TodoList = ({
           onDelete={onDelete}
           onMove={onMove}
           onCreateChild={onCreateChild}
+          onGenerateAISubtasks={onGenerateAISubtasks}
         />
       ))}
     </div>

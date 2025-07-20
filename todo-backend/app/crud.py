@@ -160,3 +160,127 @@ def bulk_delete_todos(db: Session, todo_ids: List[int]) -> int:
     deleted_count = db.query(Todo).filter(Todo.id.in_(todo_ids)).delete(synchronize_session=False)
     db.commit()
     return deleted_count
+
+def generate_ai_subtasks(db: Session, parent_todo_id: int, max_subtasks: int = 5) -> List[Todo]:
+    """Generate AI subtasks for a given parent todo (mock implementation)"""
+    parent_todo = get_todo(db, parent_todo_id)
+    if not parent_todo:
+        return []
+    
+    # Mock AI analysis based on todo text
+    todo_text = parent_todo.text.lower()
+    
+    # Define mock subtask templates based on common todo patterns
+    subtask_templates = {
+        'project': [
+            "Research and gather requirements",
+            "Create project plan and timeline", 
+            "Set up development environment",
+            "Implement core functionality",
+            "Test and debug",
+            "Document the project",
+            "Deploy and launch"
+        ],
+        'meeting': [
+            "Prepare agenda",
+            "Send calendar invites",
+            "Book meeting room",
+            "Prepare presentation materials",
+            "Follow up with attendees",
+            "Document meeting notes"
+        ],
+        'travel': [
+            "Book flights",
+            "Reserve accommodation", 
+            "Plan itinerary",
+            "Pack luggage",
+            "Check travel documents",
+            "Arrange transportation"
+        ],
+        'shopping': [
+            "Make shopping list",
+            "Compare prices online",
+            "Check store hours",
+            "Visit stores",
+            "Compare products",
+            "Make purchase"
+        ],
+        'study': [
+            "Gather study materials",
+            "Create study schedule",
+            "Review notes",
+            "Practice exercises",
+            "Take practice tests",
+            "Review weak areas"
+        ],
+        'cooking': [
+            "Plan menu",
+            "Make grocery list",
+            "Buy ingredients",
+            "Prep ingredients",
+            "Cook meal",
+            "Clean up"
+        ],
+        'exercise': [
+            "Plan workout routine",
+            "Warm up",
+            "Cardio exercise",
+            "Strength training",
+            "Cool down and stretch",
+            "Track progress"
+        ]
+    }
+    
+    # Default generic subtasks
+    generic_subtasks = [
+        "Break down into smaller steps",
+        "Research and gather information",
+        "Create action plan",
+        "Execute first phase",
+        "Review and adjust approach",
+        "Complete final steps",
+        "Review and finalize"
+    ]
+    
+    # Determine which template to use based on keywords
+    selected_subtasks = generic_subtasks
+    for category, subtasks in subtask_templates.items():
+        if any(keyword in todo_text for keyword in [category, category[:-1] if category.endswith('ing') else category + 'ing']):
+            selected_subtasks = subtasks
+            break
+    
+    # Additional keyword matching
+    if any(word in todo_text for word in ['plan', 'organize', 'prepare']):
+        selected_subtasks = subtask_templates['project']
+    elif any(word in todo_text for word in ['buy', 'purchase', 'get']):
+        selected_subtasks = subtask_templates['shopping']
+    elif any(word in todo_text for word in ['learn', 'study', 'read']):
+        selected_subtasks = subtask_templates['study']
+    elif any(word in todo_text for word in ['workout', 'gym', 'fitness']):
+        selected_subtasks = subtask_templates['exercise']
+    
+    # Limit to max_subtasks and create todo objects
+    import random
+    selected_subtasks = selected_subtasks[:max_subtasks]
+    if len(selected_subtasks) > max_subtasks:
+        selected_subtasks = random.sample(selected_subtasks, max_subtasks)
+    
+    created_subtasks = []
+    for i, subtask_text in enumerate(selected_subtasks):
+        subtask = Todo(
+            text=subtask_text,
+            completed=False,
+            priority=parent_todo.priority,  # Inherit priority from parent
+            parent_id=parent_todo_id,
+            user_id=parent_todo.user_id
+        )
+        db.add(subtask)
+        created_subtasks.append(subtask)
+    
+    db.commit()
+    
+    # Refresh all created subtasks
+    for subtask in created_subtasks:
+        db.refresh(subtask)
+    
+    return created_subtasks

@@ -30,9 +30,9 @@ export const TodoForm = ({ todo, onSave, onCancel, loading }) => {
   };
 
   const priorityOptions = [
-    { value: 'low', label: '低优先级', color: 'text-green-500' },
-    { value: 'medium', label: '中优先级', color: 'text-yellow-500' },
-    { value: 'high', label: '高优先级', color: 'text-red-500' },
+    { value: 'low', label: 'Low Priority', emoji: '🟢' },
+    { value: 'medium', label: 'Medium Priority', emoji: '🟡' },
+    { value: 'high', label: 'High Priority', emoji: '🔴' },
   ];
 
   return (

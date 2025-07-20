@@ -6,19 +6,25 @@ import {
   CalendarIcon,
   ClockIcon,
   ExclamationTriangleIcon,
-  PlusIcon 
+  PlusIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 import { TodoForm } from './TodoForm';
+import { ConfirmDialog, NotificationToast } from './ConfirmDialog';
 import { formatDate } from '../utils/dateUtils';
 import { transitionTodoUpdate } from '../utils/viewTransitions';
 
-export const TodoItem = ({ todo, onToggle, onUpdate, onDelete, onMove, onCreateChild }) => {
+export const TodoItem = ({ todo, onToggle, onUpdate, onDelete, onMove, onCreateChild, onGenerateAISubtasks }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingChild, setIsAddingChild] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // formatDate is now imported from utils
+  
+  // Dialog states
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showAIConfirm, setShowAIConfirm] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
+  const [notification, setNotification] = useState({ title: '', message: '', type: 'success' });
 
   const isOverdue = todo.due_date && new Date(todo.due_date) < new Date() && !todo.completed;
 
@@ -35,13 +41,24 @@ export const TodoItem = ({ todo, onToggle, onUpdate, onDelete, onMove, onCreateC
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this todo?')) {
-      setLoading(true);
-      try {
-        await onDelete(todo.id);
-      } finally {
-        setLoading(false);
-      }
+    setLoading(true);
+    try {
+      await onDelete(todo.id);
+      setNotification({
+        title: 'Todo Deleted',
+        message: 'Todo has been successfully deleted.',
+        type: 'success'
+      });
+      setShowNotification(true);
+    } catch (error) {
+      setNotification({
+        title: 'Delete Failed',
+        message: 'Failed to delete todo. Please try again.',
+        type: 'error'
+      });
+      setShowNotification(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,24 +82,65 @@ export const TodoItem = ({ todo, onToggle, onUpdate, onDelete, onMove, onCreateC
     }
   };
 
+  const handleGenerateAISubtasks = async () => {
+    console.log('AI button clicked for todo:', todo.id);
+    console.log('onGenerateAISubtasks function:', onGenerateAISubtasks);
+    
+    if (!onGenerateAISubtasks) {
+      setNotification({
+        title: 'AI Function Not Available',
+        message: 'The AI subtask generation feature is not properly connected. Please check the console for technical details.',
+        type: 'error'
+      });
+      setShowNotification(true);
+      console.error('onGenerateAISubtasks is not defined');
+      return;
+    }
+    
+    setShowAIConfirm(true);
+  };
+
+  const confirmAIGeneration = async () => {
+    setLoading(true);
+    try {
+      console.log('Calling AI subtasks API...');
+      const result = await onGenerateAISubtasks(todo.id, 5);
+      console.log('AI result:', result);
+      
+      setNotification({
+        title: 'AI Subtasks Generated!',
+        message: `Successfully generated ${result.generated_subtasks.length} intelligent subtasks for "${todo.text}".`,
+        type: 'success'
+      });
+      setShowNotification(true);
+    } catch (error) {
+      console.error('AI generation error:', error);
+      setNotification({
+        title: 'AI Generation Failed',
+        message: `Failed to generate AI subtasks: ${error.message}`,
+        type: 'error'
+      });
+      setShowNotification(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const priorityConfig = {
     high: { 
       label: 'High Priority', 
-      emoji: '🔴', 
       bgColor: 'bg-red-50', 
       textColor: 'text-red-700',
       borderColor: 'border-red-200'
     },
     medium: { 
       label: 'Medium Priority', 
-      emoji: '🟡', 
       bgColor: 'bg-yellow-50', 
       textColor: 'text-yellow-700',
       borderColor: 'border-yellow-200'
     },
     low: { 
       label: 'Low Priority', 
-      emoji: '🟢', 
       bgColor: 'bg-green-50', 
       textColor: 'text-green-700',
       borderColor: 'border-green-200'
@@ -137,7 +195,7 @@ export const TodoItem = ({ todo, onToggle, onUpdate, onDelete, onMove, onCreateC
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {/* Priority Badge */}
                   <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${priority.bgColor} ${priority.textColor} ${priority.borderColor}`}>
-                    {priority.emoji} {priority.label}
+                    {priority.label}
                   </span>
 
                   {/* Action Buttons */}
@@ -160,8 +218,18 @@ export const TodoItem = ({ todo, onToggle, onUpdate, onDelete, onMove, onCreateC
                       <PlusIcon className="w-4 h-4" />
                     </button>
                     
+                    {/* AI Generate Button */}
                     <button
-                      onClick={handleDelete}
+                      onClick={handleGenerateAISubtasks}
+                      disabled={loading || todo.children_count > 0}
+                      className="p-2 text-purple-600 bg-purple-100 hover:text-purple-700 hover:bg-purple-200 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-purple-300"
+                      title={todo.children_count > 0 ? "AI subtasks disabled (already has subtasks)" : "Generate AI subtasks"}
+                    >
+                      <SparklesIcon className="w-4 h-4" />
+                    </button>
+                    
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
                       disabled={loading}
                       className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
                       title="Delete todo"
@@ -242,11 +310,44 @@ export const TodoItem = ({ todo, onToggle, onUpdate, onDelete, onMove, onCreateC
                 onDelete={onDelete}
                 onMove={onMove}
                 onCreateChild={onCreateChild}
+                onGenerateAISubtasks={onGenerateAISubtasks}
               />
             ))}
           </div>
         </div>
       )}
+
+      {/* Confirmation Dialogs */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete Todo"
+        message={`Are you sure you want to delete "${todo.text}"? This action cannot be undone and will also delete all subtasks.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="error"
+      />
+
+      <ConfirmDialog
+        isOpen={showAIConfirm}
+        onClose={() => setShowAIConfirm(false)}
+        onConfirm={confirmAIGeneration}
+        title="Generate AI Subtasks"
+        message={`Generate intelligent subtasks for "${todo.text}"? This will analyze your todo and create relevant sub-tasks to help you break it down into manageable steps.`}
+        confirmText="Generate AI Subtasks"
+        cancelText="Cancel"
+        type="info"
+      />
+
+      {/* Notification Toast */}
+      <NotificationToast
+        isOpen={showNotification}
+        onClose={() => setShowNotification(false)}
+        title={notification.title}
+        message={notification.message}
+        type={notification.type}
+      />
     </div>
   );
 };

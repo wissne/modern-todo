@@ -60,6 +60,15 @@ class ToggleCompletionRequest(BaseModel):
 class MoveRequest(BaseModel):
     new_parent_id: Optional[int] = Field(None, description="New parent ID (null for root level)")
 
+class AIGenerateSubtasksRequest(BaseModel):
+    todo_id: int = Field(..., description="ID of the parent todo to generate subtasks for")
+    max_subtasks: int = Field(default=5, ge=1, le=10, description="Maximum number of subtasks to generate")
+
+class AIGenerateSubtasksResponse(BaseModel):
+    parent_todo_id: int
+    generated_subtasks: List[TodoResponse]
+    message: str
+
 class ErrorResponse(BaseModel):
     error: str
     detail: Optional[str] = None

@@ -22,6 +22,7 @@ function App() {
     toggleTodo,
     searchTodos,
     moveTodo,
+    generateAISubtasks,
   } = useTodos()
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -181,6 +182,7 @@ function App() {
                   onDelete={deleteTodo}
                   onMove={moveTodo}
                   onCreateChild={createTodo}
+                  onGenerateAISubtasks={generateAISubtasks}
                 />
               </div>
             )}

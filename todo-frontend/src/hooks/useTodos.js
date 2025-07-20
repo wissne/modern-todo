@@ -183,6 +183,22 @@ export const useTodos = () => {
     }
   };
 
+  const generateAISubtasks = async (todoId, maxSubtasks = 5) => {
+    try {
+      const response = await fetch(`${API_BASE}/${todoId}/ai-subtasks?max_subtasks=${maxSubtasks}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('Failed to generate AI subtasks');
+      const result = await response.json();
+      await fetchTodos(); // Refresh to show new subtasks
+      return result;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchTodos();
     fetchStats();
@@ -201,6 +217,7 @@ export const useTodos = () => {
     toggleTodo,
     searchTodos,
     moveTodo,
+    generateAISubtasks,
     fetchStats,
   };
 };
