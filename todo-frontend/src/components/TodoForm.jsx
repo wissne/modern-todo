@@ -1,0 +1,99 @@
+import { useState } from 'react';
+import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+
+export const TodoForm = ({ todo, onSave, onCancel, loading }) => {
+  const [text, setText] = useState(todo?.text || '');
+  const [priority, setPriority] = useState(todo?.priority || 'medium');
+  const [dueDate, setDueDate] = useState(todo?.due_date || '');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+
+    const todoData = {
+      text: text.trim(),
+      priority,
+      due_date: dueDate || null,
+    };
+
+    onSave(todoData);
+  };
+
+  const priorityOptions = [
+    { value: 'low', label: '低优先级', color: 'text-green-500' },
+    { value: 'medium', label: '中优先级', color: 'text-yellow-500' },
+    { value: 'high', label: '高优先级', color: 'text-red-500' },
+  ];
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={todo ? "Edit todo..." : "Enter subtask..."}
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+          disabled={loading}
+          autoFocus
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Priority
+          </label>
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+            disabled={loading}
+          >
+            {priorityOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.emoji} {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Due Date
+          </label>
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+            disabled={loading}
+            min={new Date().toISOString().split('T')[0]}
+          />
+        </div>
+      </div>
+
+      <div className="flex gap-3 justify-end">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={loading}
+            className="px-6 py-2 text-gray-600 bg-gray-200 rounded-xl hover:bg-gray-300 disabled:opacity-50 transition-all duration-200 flex items-center gap-2"
+          >
+            <XMarkIcon className="w-4 h-4" />
+            Cancel
+          </button>
+        )}
+        <button
+          type="submit"
+          disabled={!text.trim() || loading}
+          className="px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl hover:from-indigo-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+        >
+          <CheckIcon className="w-4 h-4" />
+          {loading ? 'Saving...' : 'Save'}
+        </button>
+      </div>
+    </form>
+  );
+};
