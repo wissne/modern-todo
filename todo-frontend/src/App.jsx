@@ -29,6 +29,8 @@ function App() {
   const [activeView, setActiveView] = useState('active') // Default to active items
   const [isAddingTodo, setIsAddingTodo] = useState(false)
   const [isNavVisible, setIsNavVisible] = useState(true) // Navigation visibility state
+  const [sortType, setSortType] = useState('default')
+  const [orderType, setOrderType] = useState('asc')
 
   const handleAddTodo = async (todoData) => {
     setIsAddingTodo(true)
@@ -59,7 +61,7 @@ function App() {
   }
 
   // Filter todos based on active view
-  const filteredTodos = todos.filter(todo => {
+  let filteredTodos = todos.filter(todo => {
     switch (activeView) {
       case 'active':
         return !todo.completed
@@ -79,6 +81,29 @@ function App() {
         return true
     }
   })
+
+  // 排序逻辑
+  const sortFn = {
+    created: (a, b) => new Date(a.created_at) - new Date(b.created_at),
+    updated: (a, b) => new Date(b.updated_at) - new Date(a.updated_at),
+    priority: (a, b) => {
+      const priorityOrder = { high: 1, medium: 2, low: 3 };
+      return (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4);
+    },
+    due: (a, b) => {
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return new Date(a.due_date) - new Date(b.due_date);
+    },
+    completed: (a, b) => Number(a.completed) - Number(b.completed),
+    default: () => 0
+  };
+  if (sortType !== 'default') {
+    filteredTodos = [...filteredTodos].sort(sortFn[sortType] || sortFn['default']);
+    if (orderType === 'desc') {
+      filteredTodos.reverse();
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex">
@@ -154,13 +179,20 @@ function App() {
               </div>
             )}
 
-            {/* Search - Hide when in stats view */}
+            {/* Search + Sort - Hide when in stats view */}
             {activeView !== 'stats' && (
               <div 
                 className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 mb-6"
                 style={{ viewTransitionName: 'search-bar' }}
               >
-                <SearchBar onSearch={handleSearch} loading={loading} />
+                <SearchBar 
+                  onSearch={handleSearch} 
+                  loading={loading} 
+                  sortType={sortType} 
+                  onSortChange={setSortType} 
+                  orderType={orderType}
+                  onOrderChange={setOrderType}
+                />
               </div>
             )}
 

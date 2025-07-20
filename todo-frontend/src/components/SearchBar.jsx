@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
-export const SearchBar = ({ onSearch, loading = false }) => {
+export const SearchBar = ({ onSearch, loading = false, sortType = 'default', onSortChange, orderType = 'asc', onOrderChange }) => {
   const [query, setQuery] = useState('');
   const inputRef = useRef(null);
   const isSearchingRef = useRef(false);
@@ -34,8 +34,8 @@ export const SearchBar = ({ onSearch, loading = false }) => {
   };
 
   return (
-    <div className="relative">
-      <div className="relative">
+    <div className="flex items-center gap-4">
+      <div className="relative flex-1">
         <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
         <input
           ref={inputRef}
@@ -46,7 +46,6 @@ export const SearchBar = ({ onSearch, loading = false }) => {
           className="w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-700 placeholder-gray-400"
           disabled={loading}
           onBlur={() => {
-            // Prevent blur during search operations
             if (isSearchingRef.current) {
               setTimeout(() => {
                 if (inputRef.current) {
@@ -71,7 +70,30 @@ export const SearchBar = ({ onSearch, loading = false }) => {
             <div className="animate-spin rounded-full h-4 w-4 border-2 border-indigo-500 border-t-transparent"></div>
           </div>
         )}
-      </div>
     </div>
+    {/* 排序下拉菜单 */}
+    <select
+      className="py-3 px-3 border-2 border-gray-200 rounded-xl bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+      value={sortType}
+      onChange={e => onSortChange && onSortChange(e.target.value)}
+      style={{ minWidth: 120 }}
+    >
+      <option value="default">Default</option>
+      <option value="created">Created At</option>
+      <option value="updated">Updated At</option>
+      <option value="priority">Priority</option>
+      <option value="due">Due Date</option>
+      <option value="completed">Completed Status</option>
+    </select>
+    {/* Asc/Desc切换按钮 */}
+    <button
+      type="button"
+      className={`py-3 px-3 border-2 rounded-xl ml-2 transition-all duration-200 focus:outline-none ${orderType === 'asc' ? 'bg-gray-50 border-gray-200 text-gray-700' : 'bg-indigo-50 border-indigo-300 text-indigo-700'}`}
+      onClick={() => onOrderChange && onOrderChange(orderType === 'asc' ? 'desc' : 'asc')}
+      title={orderType === 'asc' ? 'Asc' : 'Desc'}
+    >
+      {orderType === 'asc' ? 'Asc' : 'Desc'}
+    </button>
+  </div>
   );
 };

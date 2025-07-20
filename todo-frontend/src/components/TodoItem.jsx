@@ -34,7 +34,30 @@ export const TodoItem = ({ todo, onToggle, onUpdate, onDelete, onMove, onCreateC
       transitionTodoUpdate(() => {
         // The actual state update will happen in the parent component
       });
+      // 完成当前item
       await onToggle(todo.id, !todo.completed);
+      // 如果有子任务，递归完成所有子任务
+      if (todo.children && todo.children.length > 0) {
+        for (const child of todo.children) {
+          if (!child.completed) {
+            await onToggle(child.id, true);
+          }
+          // 递归处理子子任务
+          if (child.children && child.children.length > 0) {
+            const completeChildren = async (children) => {
+              for (const c of children) {
+                if (!c.completed) {
+                  await onToggle(c.id, true);
+                }
+                if (c.children && c.children.length > 0) {
+                  await completeChildren(c.children);
+                }
+              }
+            };
+            await completeChildren(child.children);
+          }
+        }
+      }
     } finally {
       setLoading(false);
     }
