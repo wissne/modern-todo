@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const API_BASE = 'http://localhost:8000/api/todos';
+export const API_BASE = 'http://localhost:8000/api';
+const API_TODO_BASE = `${API_BASE}/todos`;
 
 export const useTodos = () => {
   const [todos, setTodos] = useState([]);
@@ -11,7 +12,7 @@ export const useTodos = () => {
   const fetchTodos = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/`);
+      const response = await fetch(`${API_TODO_BASE}/`);
       if (!response.ok) throw new Error('Failed to fetch todos');
       const data = await response.json();
       setTodos(data);
@@ -25,7 +26,7 @@ export const useTodos = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_BASE}/stats/`);
+      const response = await fetch(`${API_TODO_BASE}/stats/`);
       if (!response.ok) throw new Error('Failed to fetch stats');
       const data = await response.json();
       setStats(data);
@@ -73,7 +74,7 @@ export const useTodos = () => {
   const createTodo = async (todoData) => {
     try {
       console.log('Creating todo with data:', todoData);
-      const response = await fetch(`${API_BASE}/`, {
+      const response = await fetch(`${API_TODO_BASE}/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(todoData),
@@ -101,7 +102,7 @@ export const useTodos = () => {
 
   const updateTodo = async (id, updates) => {
     try {
-      const response = await fetch(`${API_BASE}/${id}`, {
+      const response = await fetch(`${API_TODO_BASE}/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -119,7 +120,7 @@ export const useTodos = () => {
 
   const deleteTodo = async (id) => {
     try {
-      const response = await fetch(`${API_BASE}/${id}`, {
+      const response = await fetch(`${API_TODO_BASE}/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete todo');
@@ -133,7 +134,7 @@ export const useTodos = () => {
 
   const toggleTodo = async (id, completed) => {
     try {
-      const response = await fetch(`${API_BASE}/${id}/toggle`, {
+      const response = await fetch(`${API_TODO_BASE}/${id}/toggle`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ completed }),
@@ -157,7 +158,7 @@ export const useTodos = () => {
     
     // Don't show loading state for search to prevent UI flicker
     try {
-      const response = await fetch(`${API_BASE}/search/?q=${encodeURIComponent(query)}`);
+      const response = await fetch(`${API_TODO_BASE}/search/?q=${encodeURIComponent(query)}`);
       if (!response.ok) throw new Error('Failed to search todos');
       const data = await response.json();
       setTodos(data);
@@ -169,7 +170,7 @@ export const useTodos = () => {
 
   const moveTodo = async (id, newParentId) => {
     try {
-      const response = await fetch(`${API_BASE}/${id}/move`, {
+      const response = await fetch(`${API_TODO_BASE}/${id}/move`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ new_parent_id: newParentId }),
@@ -185,7 +186,7 @@ export const useTodos = () => {
 
   const generateAISubtasks = async (todoId, maxSubtasks = 5) => {
     try {
-      const response = await fetch(`${API_BASE}/${todoId}/ai-subtasks?max_subtasks=${maxSubtasks}`, {
+      const response = await fetch(`${API_TODO_BASE}/${todoId}/ai-subtasks?max_subtasks=${maxSubtasks}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });

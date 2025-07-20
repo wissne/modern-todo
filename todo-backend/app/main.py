@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 import os
 from dotenv import load_dotenv
 from app.database import create_tables
-from app.routers import todos
+from app.routers import todos, maintain_db
 
 # Load environment variables
 load_dotenv()
@@ -30,6 +30,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(todos.router)
+app.include_router(maintain_db.router)
 
 # Global exception handler
 @app.exception_handler(HTTPException)
