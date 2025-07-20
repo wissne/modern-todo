@@ -18,3 +18,219 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* View Transitions API Styles */
+@view-transition {
+  navigation: auto;
+}
+
+/* Default view transition */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.6s;
+  animation-timing-function: ease-in-out;
+}
+
+/* Navigation toggle transition */
+::view-transition-old(nav-toggle),
+::view-transition-new(nav-toggle) {
+  animation-duration: 0.5s;
+  animation-timing-function: ease-in-out;
+}
+
+/* Main content transition */
+::view-transition-old(main-content),
+::view-transition-new(main-content) {
+  animation-duration: 0.5s;
+  animation-timing-function: ease-in-out;
+}
+
+/* Add Todo Form transition */
+::view-transition-old(add-todo-form),
+::view-transition-new(add-todo-form) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Search Bar transition */
+::view-transition-old(search-bar),
+::view-transition-new(search-bar) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Header transitions */
+::view-transition-old(app-header),
+::view-transition-new(app-header) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+::view-transition-old(header-title),
+::view-transition-new(header-title) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+::view-transition-old(header-subtitle),
+::view-transition-new(header-subtitle) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* View change transitions */
+::view-transition-old(view-change),
+::view-transition-new(view-change) {
+  animation-duration: 0.4s;
+  animation-timing-function: ease-out;
+}
+
+/* Custom slide animations for view changes */
+@keyframes slide-from-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-to-left {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+/* Apply slide animations to view transitions */
+::view-transition-new(view-change) {
+  animation: slide-from-right 0.4s ease-out;
+}
+
+::view-transition-old(view-change) {
+  animation: slide-to-left 0.4s ease-out;
+}
+
+/* Fade transition for todo updates */
+::view-transition-old(todo-update),
+::view-transition-new(todo-update) {
+  animation-duration: 0.4s;
+  animation-timing-function: ease-in-out;
+}
+
+/* Scale animation for navigation */
+::view-transition-old(navigation),
+::view-transition-new(navigation) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes scale-out {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+::view-transition-new(navigation) {
+  animation: scale-in 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::view-transition-old(navigation) {
+  animation: scale-out 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom smooth resize animation for content elements */
+@keyframes smooth-resize {
+  from {
+    transform: scale(0.98);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes smooth-resize-out {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.98);
+    opacity: 0.8;
+  }
+}
+
+/* Apply smooth resize to content elements during navigation toggle */
+::view-transition-new(add-todo-form) {
+  animation: smooth-resize 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+::view-transition-old(add-todo-form) {
+  animation: smooth-resize-out 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+::view-transition-new(search-bar) {
+  animation: smooth-resize 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+::view-transition-old(search-bar) {
+  animation: smooth-resize-out 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Header smooth transitions */
+::view-transition-new(app-header) {
+  animation: smooth-resize 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+::view-transition-old(app-header) {
+  animation: smooth-resize-out 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+::view-transition-new(header-title) {
+  animation: smooth-resize 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+::view-transition-old(header-title) {
+  animation: smooth-resize-out 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+::view-transition-new(header-subtitle) {
+  animation: smooth-resize 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+::view-transition-old(header-subtitle) {
+  animation: smooth-resize-out 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.2s !important;
+    animation-timing-function: ease !important;
+  }
+}

@@ -11,6 +11,7 @@ import {
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 import { TodoForm } from './TodoForm';
 import { formatDate } from '../utils/dateUtils';
+import { transitionTodoUpdate } from '../utils/viewTransitions';
 
 export const TodoItem = ({ todo, onToggle, onUpdate, onDelete, onMove, onCreateChild }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -24,6 +25,9 @@ export const TodoItem = ({ todo, onToggle, onUpdate, onDelete, onMove, onCreateC
   const handleToggle = async () => {
     setLoading(true);
     try {
+      transitionTodoUpdate(() => {
+        // The actual state update will happen in the parent component
+      });
       await onToggle(todo.id, !todo.completed);
     } finally {
       setLoading(false);
@@ -88,9 +92,12 @@ export const TodoItem = ({ todo, onToggle, onUpdate, onDelete, onMove, onCreateC
   const priority = priorityConfig[todo.priority];
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border-2 border-gray-100 p-4 transition-all duration-300 hover:shadow-lg hover:border-gray-200 ${
-      todo.completed ? 'opacity-75 bg-gray-50' : ''
-    }`}>
+    <div 
+      className={`bg-white rounded-xl shadow-sm border-2 border-gray-100 p-4 transition-all duration-300 hover:shadow-lg hover:border-gray-200 ${
+        todo.completed ? 'opacity-75 bg-gray-50' : ''
+      }`}
+      style={{ viewTransitionName: `todo-${todo.id}` }}
+    >
       <div className="flex items-start gap-4">
         {/* Enhanced Checkbox */}
         <button

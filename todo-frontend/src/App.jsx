@@ -7,6 +7,7 @@ import { TodoStats } from './components/TodoStats'
 import { ApiTest } from './components/ApiTest'
 import { Navigation } from './components/Navigation'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
+import { transitionViewChange, transitionNavigation } from './utils/viewTransitions'
 
 function App() {
   const {
@@ -38,9 +39,23 @@ function App() {
   }
 
   const handleSearch = useCallback(async (query) => {
-    setSearchQuery(query)
+    transitionViewChange(() => {
+      setSearchQuery(query)
+    })
     await searchTodos(query)
   }, [searchTodos])
+
+  const handleViewChange = (newView) => {
+    transitionViewChange(() => {
+      setActiveView(newView)
+    })
+  }
+
+  const handleNavToggle = () => {
+    transitionNavigation(() => {
+      setIsNavVisible(!isNavVisible)
+    })
+  }
 
   // Filter todos based on active view
   const filteredTodos = todos.filter(todo => {
@@ -68,10 +83,11 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex">
       {/* Navigation Toggle Button */}
       <button
-        onClick={() => setIsNavVisible(!isNavVisible)}
+        onClick={handleNavToggle}
         className={`hidden lg:block fixed top-4 z-50 p-3 bg-white rounded-xl shadow-lg border border-gray-200 text-gray-600 hover:text-gray-800 transition-all duration-200 hover:shadow-xl ${isNavVisible ? 'left-[336px]' : 'left-4'
           }`}
         title={isNavVisible ? 'Hide Navigation' : 'Show Navigation'}
+        style={{ viewTransitionName: 'nav-toggle' }}
       >
         {isNavVisible ? (
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,39 +103,62 @@ function App() {
       {/* Navigation Sidebar */}
       <Navigation
         activeView={activeView}
-        onViewChange={setActiveView}
+        onViewChange={handleViewChange}
         stats={filteredStats}
         isVisible={isNavVisible}
       />
 
       {/* Main Content */}
-      <div className={`flex-1 min-h-screen overflow-y-auto transition-all duration-300 ${isNavVisible ? 'lg:ml-80' : 'lg:ml-0'
-        }`}>
+      <div 
+        className={`flex-1 min-h-screen overflow-y-auto transition-all duration-500 ease-out ${isNavVisible ? 'lg:ml-80' : 'lg:ml-0'
+        }`}
+        style={{ viewTransitionName: 'main-content' }}
+      >
         <div className="p-2 lg:p-4">
           <div className="max-w-4xl mx-auto">
             {/* Header */}
-            <div className="text-center mb-4">
-              <div className="flex items-center justify-center gap-2 mb-2">
+            <div 
+              className="text-center mb-4"
+              style={{ viewTransitionName: 'app-header' }}
+            >
+              <div 
+                className="flex items-center justify-center gap-2 mb-2"
+                style={{ viewTransitionName: 'header-title' }}
+              >
                 <CheckCircleIcon className="w-8 h-8 text-indigo-600" />
                 <h1 className="text-2xl font-bold text-gray-800">Modern Todo</h1>
               </div>
-              <p className="text-gray-600 text-sm">Stay organized and productive</p>
+              <p 
+                className="text-gray-600 text-sm"
+                style={{ viewTransitionName: 'header-subtitle' }}
+              >
+                Stay organized and productive
+              </p>
             </div>
 
             {/* API Test (show if there are errors) */}
             {error && <ApiTest />}
 
             {/* Stats - Show only when Statistics view is selected */}
-            {activeView === 'stats' && <TodoStats stats={stats} />}
+            {activeView === 'stats' && (
+              <div style={{ viewTransitionName: 'stats-content' }}>
+                <TodoStats stats={stats} />
+              </div>
+            )}
 
             {/* Add Todo Form - Hide when in stats view */}
             {activeView !== 'stats' && (
-              <AddTodoForm onAdd={handleAddTodo} loading={isAddingTodo} />
+              <div style={{ viewTransitionName: 'add-todo-form' }}>
+                <AddTodoForm onAdd={handleAddTodo} loading={isAddingTodo} />
+              </div>
             )}
 
             {/* Search - Hide when in stats view */}
             {activeView !== 'stats' && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 mb-6">
+              <div 
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 mb-6"
+                style={{ viewTransitionName: 'search-bar' }}
+              >
                 <SearchBar onSearch={handleSearch} loading={loading} />
               </div>
             )}
@@ -133,15 +172,17 @@ function App() {
 
             {/* Todo List - Hide when in stats view */}
             {activeView !== 'stats' && (
-              <TodoList
-                todos={filteredTodos}
-                loading={loading}
-                onToggle={toggleTodo}
-                onUpdate={updateTodo}
-                onDelete={deleteTodo}
-                onMove={moveTodo}
-                onCreateChild={createTodo}
-              />
+              <div style={{ viewTransitionName: 'todo-list' }}>
+                <TodoList
+                  todos={filteredTodos}
+                  loading={loading}
+                  onToggle={toggleTodo}
+                  onUpdate={updateTodo}
+                  onDelete={deleteTodo}
+                  onMove={moveTodo}
+                  onCreateChild={createTodo}
+                />
+              </div>
             )}
 
             {/* Empty State - Only for non-stats views */}
