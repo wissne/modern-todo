@@ -4,20 +4,27 @@ import { PlusIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/ou
 export const AddTodoForm = ({ onAdd, loading = false }) => {
   const [text, setText] = useState('');
   const [priority, setPriority] = useState('medium');
-  const [dueDate, setDueDate] = useState('');
+  const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0]); // Default to today
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (text.trim()) {
+      // Convert date to datetime format if provided
+      let formattedDueDate = null;
+      if (dueDate) {
+        // Add time component to make it a valid datetime (end of day)
+        formattedDueDate = `${dueDate}T23:59:59`;
+      }
+      
       await onAdd({
         text: text.trim(),
         priority,
-        due_date: dueDate || null
+        due_date: formattedDueDate
       });
       setText('');
       setPriority('medium');
-      setDueDate('');
+      setDueDate(new Date().toISOString().split('T')[0]); // Reset to today
       setIsExpanded(false);
     }
   };

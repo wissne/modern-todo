@@ -34,6 +34,42 @@ export const useTodos = () => {
     }
   };
 
+  // Calculate filtered stats based on current todos (excluding sub-items)
+  const calculateFilteredStats = (todoList) => {
+    // Only count root-level todos (parent_id is null)
+    const rootTodos = todoList.filter(todo => !todo.parent_id);
+    
+    const total = rootTodos.length;
+    const completed = rootTodos.filter(todo => todo.completed).length;
+    const pending = rootTodos.filter(todo => !todo.completed).length;
+    const overdue = rootTodos.filter(todo => 
+      todo.due_date && new Date(todo.due_date) < new Date() && !todo.completed
+    ).length;
+    
+    // Calculate due today count
+    const today = new Date().toISOString().split('T')[0];
+    const dueToday = rootTodos.filter(todo => {
+      if (!todo.due_date) return false;
+      const todoDate = todo.due_date.split('T')[0];
+      return todoDate === today;
+    }).length;
+    
+    const by_priority = {
+      high: rootTodos.filter(todo => todo.priority === 'high').length,
+      medium: rootTodos.filter(todo => todo.priority === 'medium').length,
+      low: rootTodos.filter(todo => todo.priority === 'low').length,
+    };
+
+    return {
+      total,
+      completed,
+      pending,
+      overdue,
+      dueToday,
+      by_priority
+    };
+  };
+
   const createTodo = async (todoData) => {
     try {
       console.log('Creating todo with data:', todoData);
@@ -119,7 +155,7 @@ export const useTodos = () => {
       return;
     }
     
-    setLoading(true);
+    // Don't show loading state for search to prevent UI flicker
     try {
       const response = await fetch(`${API_BASE}/search/?q=${encodeURIComponent(query)}`);
       if (!response.ok) throw new Error('Failed to search todos');
@@ -128,8 +164,6 @@ export const useTodos = () => {
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
     }
   }, [fetchTodos]);
 
@@ -159,6 +193,7 @@ export const useTodos = () => {
     loading,
     error,
     stats,
+    filteredStats: calculateFilteredStats(todos),
     fetchTodos,
     createTodo,
     updateTodo,

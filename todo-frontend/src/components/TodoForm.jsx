@@ -4,16 +4,26 @@ import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 export const TodoForm = ({ todo, onSave, onCancel, loading }) => {
   const [text, setText] = useState(todo?.text || '');
   const [priority, setPriority] = useState(todo?.priority || 'medium');
-  const [dueDate, setDueDate] = useState(todo?.due_date || '');
+  // Convert datetime back to date for the input field, default to today for new todos
+  const [dueDate, setDueDate] = useState(
+    todo?.due_date ? todo.due_date.split('T')[0] : new Date().toISOString().split('T')[0]
+  );
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!text.trim()) return;
 
+    // Convert date to datetime format if provided
+    let formattedDueDate = null;
+    if (dueDate) {
+      // Add time component to make it a valid datetime (end of day)
+      formattedDueDate = `${dueDate}T23:59:59`;
+    }
+
     const todoData = {
       text: text.trim(),
       priority,
-      due_date: dueDate || null,
+      due_date: formattedDueDate,
     };
 
     onSave(todoData);

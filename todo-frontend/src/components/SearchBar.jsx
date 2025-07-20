@@ -1,13 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 export const SearchBar = ({ onSearch, loading = false }) => {
   const [query, setQuery] = useState('');
+  const inputRef = useRef(null);
+  const isSearchingRef = useRef(false);
 
-  // Debounced search - removed onSearch from dependencies to prevent infinite loop
+  // Debounced search with focus preservation
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      isSearchingRef.current = true;
       onSearch(query);
+      // Restore focus after search completes
+      setTimeout(() => {
+        if (isSearchingRef.current && inputRef.current) {
+          inputRef.current.focus();
+          isSearchingRef.current = false;
+        }
+      }, 50);
     }, 300);
 
     return () => clearTimeout(timeoutId);
@@ -15,6 +25,12 @@ export const SearchBar = ({ onSearch, loading = false }) => {
 
   const handleClear = () => {
     setQuery('');
+    // Keep focus on input after clearing
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 10);
   };
 
   return (
@@ -22,12 +38,23 @@ export const SearchBar = ({ onSearch, loading = false }) => {
       <div className="relative">
         <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
         <input
+          ref={inputRef}
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search todos..."
           className="w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-700 placeholder-gray-400"
           disabled={loading}
+          onBlur={() => {
+            // Prevent blur during search operations
+            if (isSearchingRef.current) {
+              setTimeout(() => {
+                if (inputRef.current) {
+                  inputRef.current.focus();
+                }
+              }, 10);
+            }
+          }}
         />
         {query && (
           <button

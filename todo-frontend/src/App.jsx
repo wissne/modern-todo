@@ -1,11 +1,11 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useTodos } from './hooks/useTodos'
 import { AddTodoForm } from './components/AddTodoForm'
 import { TodoList } from './components/TodoList'
 import { SearchBar } from './components/SearchBar'
 import { TodoStats } from './components/TodoStats'
-import { FilterTabs } from './components/FilterTabs'
 import { ApiTest } from './components/ApiTest'
+import { Navigation } from './components/Navigation'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
 
 function App() {
@@ -14,6 +14,7 @@ function App() {
     loading,
     error,
     stats,
+    filteredStats,
     createTodo,
     updateTodo,
     deleteTodo,
@@ -23,7 +24,7 @@ function App() {
   } = useTodos()
 
   const [searchQuery, setSearchQuery] = useState('')
-  const [filter, setFilter] = useState('all') // all, active, completed
+  const [activeView, setActiveView] = useState('active') // Default to active items
   const [isAddingTodo, setIsAddingTodo] = useState(false)
 
   const handleAddTodo = async (todoData) => {
@@ -40,15 +41,41 @@ function App() {
     await searchTodos(query)
   }, [searchTodos])
 
+  // Filter todos based on active view
   const filteredTodos = todos.filter(todo => {
-    if (filter === 'active') return !todo.completed
-    if (filter === 'completed') return todo.completed
-    return true
+    switch (activeView) {
+      case 'active':
+        return !todo.completed
+      case 'completed':
+        return todo.completed
+      case 'overdue':
+        return todo.due_date && new Date(todo.due_date) < new Date() && !todo.completed
+      case 'high-priority':
+        return todo.priority === 'high'
+      case 'today':
+        if (!todo.due_date) return false
+        const today = new Date().toISOString().split('T')[0]
+        const todoDate = todo.due_date.split('T')[0]
+        return todoDate === today
+      case 'all':
+      default:
+        return true
+    }
   })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex">
+      {/* Navigation Sidebar */}
+      <Navigation 
+        activeView={activeView} 
+        onViewChange={setActiveView} 
+        stats={filteredStats}
+      />
+      
+      {/* Main Content */}
+      <div className="flex-1 lg:ml-80 min-h-screen overflow-y-auto">
+        <div className="p-4 lg:p-8">
+          <div className="max-w-4xl mx-auto pt-16 lg:pt-8">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -61,23 +88,20 @@ function App() {
         {/* API Test (show if there are errors) */}
         {error && <ApiTest />}
 
-        {/* Stats */}
-        {stats && <TodoStats stats={stats} />}
+        {/* Stats - Show only when Statistics view is selected */}
+        {activeView === 'stats' && <TodoStats stats={stats} />}
 
-        {/* Add Todo Form */}
-        <AddTodoForm onAdd={handleAddTodo} loading={isAddingTodo} />
+        {/* Add Todo Form - Hide when in stats view */}
+        {activeView !== 'stats' && (
+          <AddTodoForm onAdd={handleAddTodo} loading={isAddingTodo} />
+        )}
 
-        {/* Search and Filter */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <SearchBar onSearch={handleSearch} loading={loading} />
-            </div>
-            <div className="sm:w-auto">
-              <FilterTabs activeFilter={filter} onFilterChange={setFilter} />
-            </div>
+        {/* Search - Hide when in stats view */}
+        {activeView !== 'stats' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <SearchBar onSearch={handleSearch} loading={loading} />
           </div>
-        </div>
+        )}
 
         {/* Error Display */}
         {error && (
@@ -86,32 +110,61 @@ function App() {
           </div>
         )}
 
-        {/* Todo List */}
-        <TodoList
-          todos={filteredTodos}
-          loading={loading}
-          onToggle={toggleTodo}
-          onUpdate={updateTodo}
-          onDelete={deleteTodo}
-          onMove={moveTodo}
-          onCreateChild={createTodo}
-        />
+        {/* Todo List - Hide when in stats view */}
+        {activeView !== 'stats' && (
+          <TodoList
+            todos={filteredTodos}
+            loading={loading}
+            onToggle={toggleTodo}
+            onUpdate={updateTodo}
+            onDelete={deleteTodo}
+            onMove={moveTodo}
+            onCreateChild={createTodo}
+          />
+        )}
 
-        {/* Empty State */}
-        {!loading && filteredTodos.length === 0 && (
+        {/* Empty State - Only for non-stats views */}
+        {activeView !== 'stats' && !loading && filteredTodos.length === 0 && (
           <div className="text-center py-12">
             <CheckCircleIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-medium text-gray-500 mb-2">
-              {searchQuery ? 'No todos found' : filter === 'completed' ? 'No completed todos' : filter === 'active' ? 'No active todos' : 'No todos yet'}
+              {searchQuery ? 'No todos found' : getEmptyStateMessage(activeView)}
             </h3>
             <p className="text-gray-400">
-              {searchQuery ? 'Try a different search term' : 'Add your first todo to get started!'}
+              {searchQuery ? 'Try a different search term' : getEmptyStateSubtext(activeView)}
             </p>
           </div>
         )}
+          </div>
+        </div>
       </div>
     </div>
   )
+}
+
+// Helper functions for empty state messages
+const getEmptyStateMessage = (view) => {
+  switch (view) {
+    case 'active': return 'No active todos'
+    case 'completed': return 'No completed todos'
+    case 'overdue': return 'No overdue todos'
+    case 'high-priority': return 'No high priority todos'
+    case 'today': return 'No todos due today'
+    case 'stats': return 'Statistics View'
+    default: return 'No todos yet'
+  }
+}
+
+const getEmptyStateSubtext = (view) => {
+  switch (view) {
+    case 'active': return 'Great job! All your tasks are completed.'
+    case 'completed': return 'Complete some tasks to see them here.'
+    case 'overdue': return 'You\'re all caught up! No overdue tasks.'
+    case 'high-priority': return 'No urgent tasks at the moment.'
+    case 'today': return 'No tasks are due today.'
+    case 'stats': return 'View your productivity statistics and insights.'
+    default: return 'Add your first todo to get started!'
+  }
 }
 
 export default App

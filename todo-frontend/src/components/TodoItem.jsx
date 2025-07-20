@@ -10,19 +10,14 @@ import {
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 import { TodoForm } from './TodoForm';
+import { formatDate } from '../utils/dateUtils';
 
 export const TodoItem = ({ todo, onToggle, onUpdate, onDelete, onMove, onCreateChild }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingChild, setIsAddingChild] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  // formatDate is now imported from utils
 
   const isOverdue = todo.due_date && new Date(todo.due_date) < new Date() && !todo.completed;
 
